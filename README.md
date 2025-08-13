@@ -1,4 +1,4 @@
-# Welcome to Ubuntu Console Management (Ziad ٌRashid)
+# Welcome to Ubuntu Console Management..
 
 ## How can I edit this code?
 
