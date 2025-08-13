@@ -4,7 +4,7 @@ pipeline {
     agent { label 'ubuntu' }
 
     environment {
-        AWS_ACCOUNT_ID      = 'YOUR_AWS_ACCOUNT_ID'
+        AWS_ACCOUNT_ID      = '826568078815'
         AWS_REGION          = 'us-east-1'
         ECR_REPO_NAME       = 'my-ubuntu-app'
         MANIFEST_REPO_URL   = 'https://github.com/ztr1566/jenkins-app-manifests.git' // <-- تأكد من أن هذا هو الرابط الصحيح
