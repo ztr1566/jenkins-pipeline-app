@@ -1,4 +1,4 @@
-# Welcome to Ubuntu Console Management
+# Welcome to Ubuntu Console Management (Ziad ٌRashid)
 
 ## How can I edit this code?
 
@@ -48,3 +48,5 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+Thank you for using this project.
