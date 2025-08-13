@@ -7,22 +7,21 @@ pipeline {
         AWS_ACCOUNT_ID      = '826568078815'
         AWS_REGION          = 'us-east-1'
         ECR_REPO_NAME       = 'my-ubuntu-app'
-        MANIFEST_REPO_URL   = 'https://github.com/ztr1566/jenkins-app-manifests.git' // <-- تأكد من أن هذا هو الرابط الصحيح
-        GITHUB_CREDENTIALS  = 'github-credentials' // <-- الـ ID الذي أنشأته في الخطوة 2
+        MANIFEST_REPO_URL   = 'https://github.com/ztr1566/jenkins-app-manifests.git'
+        GITHUB_CREDENTIALS  = 'github-credentials'
+        // Define the imageTag once using the build number
+        IMAGE_TAG           = "${env.BUILD_NUMBER}"
     }
 
     stages {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    // سنستخدم رقم البناء كـ tag فريد
-                    def imageTag = env.BUILD_NUMBER
-
                     buildPipeline(
                         awsAccountId: env.AWS_ACCOUNT_ID,
                         awsRegion: env.AWS_REGION,
                         ecrRepoName: env.ECR_REPO_NAME,
-                        imageTag: imageTag
+                        imageTag: env.IMAGE_TAG // Use the environment variable
                     )
                 }
             }
@@ -31,25 +30,20 @@ pipeline {
         stage('Update Manifests') {
             steps {
                 script {
-                    def imageTag = env.BUILD_NUMBER
-                    def fullImageUrl = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO_NAME}:${imageTag}"
+                    def fullImageUrl = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO_NAME}:${env.IMAGE_TAG}"
 
                     withCredentials([usernamePassword(credentialsId: env.GITHUB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                            
+                        
                         sh 'git config --global user.email "ztr1566@gmail.com"'
                         sh 'git config --global user.name "Ziad Rashid"'
-
-                        // --- THIS IS THE NEW LINE ---
-                        // Clean up the old directory before cloning
                         sh 'rm -rf jenkins-app-manifests' 
-                            
-                        // Now the clone will always work
                         sh "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/ztr1566/jenkins-app-manifests.git"
-                            
+                        
                         dir('jenkins-app-manifests') {
                             sh "sed -i 's|image: .*|image: ${fullImageUrl}|g' deployment.yml"
                             sh 'git add deployment.yml'
-                            sh 'git commit -m "Update image to version ${imageTag}"'
+                            // Use double quotes here for the variable to work
+                            sh "git commit -m 'Update image to version ${env.IMAGE_TAG}'"
                             sh 'git push'
                         }
                     }
