@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Ubuntu Web Console Theme - Dark Mode Only */
+    --background: 190 6% 13%; /* #1C2526 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 190 8% 15%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 190 10% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary = Orange */
+    --primary: 25 100% 50%; /* #FF6200 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 190 8% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 190 5% 25%;
+    --muted-foreground: 0 0% 70%; /* #D3D3D3 */
+
+    --accent: 25 90% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 100% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 100% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 190 10% 20%;
+    --input: 190 10% 20%;
+    --ring: 25 100% 50%;
+
+    --radius: 0.375rem;
+
+    /* Sidebar specific */
+    --sidebar-background: 190 10% 10%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 25 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 190 12% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 190 15% 18%;
+    --sidebar-ring: 25 100% 50%;
+
+    /* Terminal specific */
+    --terminal-background: 0 0% 0%;
+    --terminal-foreground: 0 0% 85%;
+    --terminal-cursor: 25 100% 50%;
+    
+    /* Animations */
+    --glow-animation: glow 1.5s ease-in-out infinite alternate;
+  }
+
+  /* No light theme - Dark only */
+  .dark {
+    --background: 190 6% 13%;
+    --foreground: 0 0% 100%;
+
+    --card: 190 8% 15%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 190 10% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 25 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 190 8% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 190 5% 25%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 25 90% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 100% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 100% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 190 10% 20%;
+    --input: 190 10% 20%;
+    --ring: 25 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
