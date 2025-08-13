@@ -34,22 +34,21 @@ pipeline {
                     def imageTag = env.BUILD_NUMBER
                     def fullImageUrl = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO_NAME}:${imageTag}"
 
-                    // استخدم الـ credentials للوصول إلى المستودع
                     withCredentials([usernamePassword(credentialsId: env.GITHUB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-
-                        // إعداد Git
+                            
                         sh 'git config --global user.email "ztr1566@gmail.com"'
                         sh 'git config --global user.name "Ziad Rashid"'
 
-                        // استنساخ مستودع الـ manifests
+                        // --- THIS IS THE NEW LINE ---
+                        // Clean up the old directory before cloning
+                        sh 'rm -rf jenkins-app-manifests' 
+                            
+                        // Now the clone will always work
                         sh "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/ztr1566/jenkins-app-manifests.git"
-
+                            
                         dir('jenkins-app-manifests') {
-                            // تحديث ملف الـ deployment باستخدام sed
-                            sh "sed -i 's|image: .*|image: ${fullImageUrl}|g' deployment.yaml"
-
-                            // عمل commit و push للتغيير
-                            sh 'git add deployment.yaml'
+                            sh "sed -i 's|image: .*|image: ${fullImageUrl}|g' deployment.yml"
+                            sh 'git add deployment.yml'
                             sh 'git commit -m "Update image to version ${imageTag}"'
                             sh 'git push'
                         }
