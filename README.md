@@ -2,99 +2,77 @@
 
 A comprehensive, fully automated CI/CD pipeline implementation using Jenkins, ArgoCD, and monitoring with Prometheus & Grafana on AWS EKS.
 
-## High-Level Infrastructure Architecture
+## The GitOps Flywheel: A CI/CD Architecture for AWS EKS
 ```mermaid
 graph TD
-    subgraph "Developer's Local Machine"
-        dev[Developer]
+    subgraph "Local Development"
+        A["💻 Developer"]
     end
 
-    subgraph "External Services"
-        github[("GitHub Repositories<br>- jenkins-pipeline-app<br>- jenkins-shared-lib<br>- my-app-manifests")]
+    subgraph "Version Control"
+        B["🐙 GitHub<br><i>App Code & K8s Manifests</i>"]
     end
 
-    subgraph "AWS Cloud (us-east-1)"
-        subgraph "IAM"
-            iam_user["IAM User<br>(devops-project-admin)"]
-            iam_role["IAM Role<br>(EBS_CSI_DriverRole)"]
-        end
-
-        subgraph "EC2 Compute"
-            jenkins_master["EC2: Jenkins Master<br>(t3.medium)"]
-            jenkins_agent["EC2: Jenkins Agent<br>(t3.medium)"]
-        end
-
-        subgraph "EKS Cluster (my-devops-cluster)"
-            eks_cp["EKS Control Plane"]
-            subgraph "Worker Nodes (t3.medium)"
-                argo["ArgoCD Pods"]
-                monitoring["Prometheus & Grafana Pods"]
-                app["Deployed Application Pods"]
+    subgraph "AWS Cloud"
+        subgraph "CI Environment"
+            subgraph "EC2 Instances"
+                C["👷 Jenkins Master"]
+                D["⚙️ Jenkins Agent"]
             end
         end
 
-        subgraph "Storage & Registry"
-            ecr["ECR Repository<br>(my-ubuntu-app)"]
-            ebs["EBS Volumes<br>(For Prometheus)"]
+        subgraph "Artifact Repository"
+            E["📦 ECR<br><i>Docker Image Registry</i>"]
+        end
+
+        subgraph "Production Environment - EKS Cluster"
+            subgraph "GitOps Controller"
+                F["🚢 ArgoCD"]
+            end
+            subgraph "Application"
+                 G["🚀 Deployed App<br><i>(Service & Pods)</i>"]
+            end
+            subgraph "Monitoring & Observability"
+                H["📈 Prometheus"]
+                I["📊 Grafana"]
+            end
         end
     end
 
-    dev -- "git push" --> github
-    github -- "Webhook" --> jenkins_master
-    jenkins_master -- "Delegates Job" --> jenkins_agent
-    jenkins_agent -- "Builds & Pushes Image" --> ecr
-    jenkins_agent -- "Updates Manifests" --> github
-    argo -- "Monitors Repo" --> github
-    argo -- "Deploys App" --> app
-    app -- "Pulls Image" --> ecr
-    monitoring -- "Scrapes Metrics" --> app
-    monitoring -- "Uses Storage" --> ebs
-    iam_role -- "Grants Permission" --> ebs
+    subgraph "Operations"
+        J["👩‍💻 DevOps Team"]
+    end
+
+    %% Workflow
+    A -- "(1) Code Push" --> B
+    B -- "(2) Webhook Trigger" --> C
+    C -- "(3) Delegates Build Job" --> D
+    D -- "(4) Build & Push Image" --> E
+    D -- "(5) Update Manifests" --> B
+    F -- "(6) Detects Manifest Change" --> B
+    F -- "(7) Pulls Manifests & Deploys" --> G
+    G -- "(8) Pulls Image" --> E
+    H -- "(9) Scrapes Metrics" --> G
+    I -- "(10) Visualizes Metrics" --> H
+    J -- "(11) Monitors Dashboards" --> I
+
+    %% Styling
+    classDef dev fill:#24292e,color:#fff,stroke:#fff,stroke-width:1px
+    classDef aws fill:#f0f6fc,color:#24292e,stroke:#d0d7de
+    classDef ci fill:#d18b00,color:#fff,stroke:#fff,stroke-width:1px
+    classDef cd fill:#0366d6,color:#fff,stroke:#fff,stroke-width:1px
+    classDef mon fill:#28a745,color:#fff,stroke:#fff,stroke-width:1px
+
+    class A,B,J dev
+    class C,D ci
+    class E aws
+    class F,G cd
+    class H,I mon
 
 ```
-## End-to-End CI/CD Workflow
-```mermaid
-graph LR
-    A[Developer Pushes Code] --> B{GitHub Webhook};
+This diagram illustrates a complete, end-to-end CI/CD pipeline leveraging a GitOps methodology on Amazon Web Services (AWS). It visualizes the entire lifecycle of an application, from a developer's code commit to a fully monitored deployment in a production Kubernetes (EKS) cluster.
 
-    subgraph "CI: Build & Push"
-        B --> C[Jenkins Trigger];
-        C --> D[Build Docker Image];
-        D --> E[Push to ECR];
-    end
-
-    subgraph "CI: Update Manifests"
-        E --> F[Clone Manifests Repo];
-        F --> G[Update deployment.yaml];
-        G --> H[Push Manifests to GitHub];
-    end
-
-    subgraph "CD: GitOps Deployment"
-        H --> I{ArgoCD Detects Change};
-        I --> J[ArgoCD Syncs App];
-        J --> K[EKS Rolling Update];
-    end
-
-    K --> L([Application Live]);
-
-```
-## Monitoring & Observability Architecture
-```mermaid
-graph TD
-    subgraph "AWS EKS Cluster"
-        A["Kubernetes Nodes & Pods<br>(Including Deployed App)"] -- "Expose Metrics" --> B[Prometheus Server];
-        B -- "Stores Time-Series Data" --> C[("AWS EBS<br>Persistent Volume")];
-        D[Grafana Server] -- "Queries Data Source" --> B;
-    end
-
-    subgraph "User Interaction"
-        E[DevOps Engineer] -- "Accesses Dashboard" --> F[("Grafana Load Balancer URL")];
-    end
-
-    F --> D;
-    E -- "Views Real-time<br>Cluster Metrics" --> D;
-
-```
+The "flywheel" concept represents the continuous, self-reinforcing momentum of the system. A code push initiates an automated workflow through Jenkins (CI), which builds and stores a containerized artifact in ECR. This triggers a declarative deployment via ArgoCD (CD), which updates the live application on EKS. The cycle is completed with an observability loop, where Prometheus and Grafana provide real-time feedback to the DevOps team, ensuring the health and stability of the system and informing the next development cycle.
 
 ## 🏗️ Architecture Overview
 
