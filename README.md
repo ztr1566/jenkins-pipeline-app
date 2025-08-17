@@ -2,6 +2,96 @@
 
 A comprehensive, fully automated CI/CD pipeline implementation using Jenkins, ArgoCD, and monitoring with Prometheus & Grafana on AWS EKS.
 
+# DevOps Pipeline: Architecture & Workflow Diagrams
+
+This document contains three diagrams illustrating the key aspects of the CI/CD and monitoring pipeline built on AWS EKS.
+
+### 1. High-Level Infrastructure Architecture
+
+This diagram shows the static components of the system and their relationships within the AWS ecosystem and with external services.
+
+```mermaid
+graph TD
+    subgraph "Developer's Local Machine"
+        dev[Developer]
+    end
+
+    subgraph "External Services"
+        github[("GitHub Repositories<br>- jenkins-pipeline-app<br>- jenkins-shared-lib<br>- my-app-manifests")]
+    end
+
+    subgraph "AWS Cloud (us-east-1)"
+        subgraph "IAM"
+            iam_user["IAM User<br>(devops-project-admin)"]
+            iam_role["IAM Role<br>(EBS_CSI_DriverRole)"]
+        end
+
+        subgraph "EC2 Compute"
+            jenkins_master["EC2: Jenkins Master<br>(t3.medium)"]
+            jenkins_agent["EC2: Jenkins Agent<br>(t3.medium)"]
+        end
+
+        subgraph "EKS Cluster (my-devops-cluster)"
+            eks_cp["EKS Control Plane"]
+            subgraph "Worker Nodes (t3.medium)"
+                argo["ArgoCD Pods"]
+                monitoring["Prometheus & Grafana Pods"]
+                app["Deployed Application Pods"]
+            end
+        end
+
+        subgraph "Storage & Registry"
+            ecr["ECR Repository<br>(my-ubuntu-app)"]
+            ebs["EBS Volumes<br>(For Prometheus)"]
+        end
+    end
+
+    dev -- "git push" --> github
+    github -- "Webhook" --> jenkins_master
+    jenkins_master -- "Delegates Job" --> jenkins_agent
+    jenkins_agent -- "Builds & Pushes Image" --> ecr
+    jenkins_agent -- "Updates Manifests" --> github
+    argo -- "Monitors Repo" --> github
+    argo -- "Deploys App" --> app
+    app -- "Pulls Image" --> ecr
+    monitoring -- "Scrapes Metrics" --> app
+    monitoring -- "Uses Storage" --> ebs
+    iam_role -- "Grants Permission" --> ebs
+
+2. End-to-End CI/CD Workflow
+This flowchart illustrates the dynamic, step-by-step process from a developer pushing code to the application being live.
+
+graph TD
+    A[Developer pushes code to<br>jenkins-pipeline-app repo] --> B{GitHub Webhook};
+    B --> C[Jenkins Master receives<br>notification and triggers pipeline];
+    C --> D["Jenkins Agent checks out<br>source code"];
+    D --> E["Agent builds Docker image<br>using Dockerfile"];
+    E --> F["Agent pushes Docker image<br>to AWS ECR"];
+    F --> G["Agent clones my-app-manifests repo"];
+    G --> H["Agent updates deployment.yaml<br>with new image tag"];
+    H --> I["Agent pushes updated<br>manifest to GitHub"];
+    I --> J{ArgoCD detects change<br>in manifests repo};
+    J --> K["ArgoCD syncs the application<br>with the EKS cluster"];
+    K --> L["EKS performs a rolling update,<br>pulling the new image from ECR"];
+    L --> M([Application is Live<br>with new version]);
+
+3. Monitoring & Observability Architecture
+This diagram details how metrics are collected from the EKS cluster and visualized in Grafana.
+
+graph TD
+    subgraph "AWS EKS Cluster"
+        A["Kubernetes Nodes & Pods<br>(Including Deployed App)"] -- "Expose Metrics" --> B[Prometheus Server];
+        B -- "Stores Time-Series Data" --> C[("AWS EBS<br>Persistent Volume")];
+        D[Grafana Server] -- "Queries Data Source" --> B;
+    end
+
+    subgraph "User Interaction"
+        E[DevOps Engineer] -- "Accesses Dashboard" --> F[("Grafana Load Balancer URL")];
+    end
+
+    F --> D;
+    E -- "Views Real-time<br>Cluster Metrics" --> D;
+
 ## 🏗️ Architecture Overview
 
 This project implements a complete DevOps pipeline that automates the journey from code commit to production deployment:
