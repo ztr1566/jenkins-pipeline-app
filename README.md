@@ -1,4 +1,4 @@
-# DevOps CI/CD Pipeline on AWS EKS
+# End to End DevOps CI/CD Pipeline on AWS EKS
 
 A comprehensive, fully automated CI/CD pipeline implementation using Jenkins, ArgoCD, and monitoring with Prometheus & Grafana on AWS EKS.
 
